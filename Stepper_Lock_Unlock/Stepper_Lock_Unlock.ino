@@ -60,13 +60,14 @@ void loop() {
     locked = true;
   }
 
-  int a2Value = (analogRead(analogPin2) / 1023) * 5;
-  if(a2Value < 1.7)
+  int a2Value = analogRead(analogPin2);
+  Serial.println(a2Value);
+  if(a2Value < 400)
   {
     digitalWrite(07, LOW);   // turn the LED on (HIGH is the voltage level)
   }
-//  else
-//  {
-//    digitalWrite(07, LOW);
-//  }
+  else  
+  {
+    digitalWrite(07, HIGH);
+  }
 }
