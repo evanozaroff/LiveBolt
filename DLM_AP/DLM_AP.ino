@@ -1,5 +1,37 @@
+#include <PubSubClient.h>
+
+#include <ArduinoJson.h>
+
 #include <ConfigManager.h>
 
+const char* GUID = "bb55555a-2ea8-4fd9-b4d2-1305c974c788";
+
+//Hard Coded Credentials
+const char* ssid = "Embedded Systems Class";
+const char* pasword = "embedded1234";
+const char* mqtt_server = "livebolt.rats3g.net";
+
+//Hard Coded Topics
+char* idmSetupTopic = "idm/register";
+char* idmStateTopic = "idm/status";
+char* idmRemoveTopic = "idm/remove/bb55555a-2ea8-4fd9-b4d2-1305c974c788";
+
+ConfigManager configManager;
+
+
+void callback(char* topic, byte* payload, unsigned int length) {
+  //Clear EEPROM
+  Serial.println("Request to remove");
+  configManager.clearEEPROM();
+}
+
+
+//Boolean to track open/close state
+bool closed = false;
+
+//Establish WiFi Client for MQTT connection
+WiFiClientSecure espClient;
+PubSubClient client(mqtt_server,8883,callback,espClient);
 
 struct Config {
     char name[20];
@@ -14,8 +46,6 @@ struct Config {
 struct Metadata {
     int8 version;
 } meta;
-
-ConfigManager configManager;
 
 void createCustomRoute(ESP8266WebServer *server) {
     server->on("/custom", HTTPMethod::HTTP_GET, [server](){
@@ -36,6 +66,8 @@ void setup() {
     configManager.addParameter("enabled", &config.enabled);
     configManager.addParameter("hour", &config.hour);
     configManager.addParameter("password", config.password, 20, set);
+    configManager.addParameter("homeName", config.homeName, 100);
+    configManager.addParameter("homePassword", config.homePassword, 100);
     configManager.addParameter("version", &meta.version, get);
 
     configManager.begin(config);
@@ -46,13 +78,109 @@ void setup() {
     //
 }
 
+void connectMQTT() 
+{
+  
+  // Loop until reconnected
+  while (!client.connected()) 
+  {
+    Serial.print("Attempting MQTT connection...");
+    
+    // Attempt to connect
+    if (client.connect("ESP8266Client","livebolt","livebolt")) 
+    {
+
+      Serial.println("connected");
+
+      Serial.println("Subscribing to: ");
+      Serial.print(idmRemoveTopic);
+      client.subscribe(idmRemoveTopic);
+      
+    } else {
+      
+      Serial.print("failed, rc=");
+      Serial.print(client.state());
+      Serial.println(" try again in 5 seconds");
+      
+      // Wait 5 seconds before retrying
+      delay(5000);
+      }
+   }
+ }
+
 void loop() {
     //configManager.clearEEPROM();
     configManager.loop();
 
-    // Add your loop code here
-//    Serial.println(configManager.getHomeName());
-//    Serial.println(configManager.getHomePassword());
+    if(configManager.getHomeName() == "")
+    {
+     
+    }
+    else
+    {
+      // Add your loop code here
+      Serial.println("Home is: "+configManager.getHomeName());
+      Serial.println(configManager.getHomePassword());
 
-    delay(1000);
+      connectMQTT();
+      client.publish(idmSetupTopic, "bb55555a-2ea8-4fd9-b4d2-1305c974c788,TestHome,Testing123!,New IDM");
+
+      /*
+      if(configManager.readAddedToHome())
+      {
+        
+      }
+      else
+      {
+          Serial.println("Subscribing to: ");
+          Serial.println(idmSetupTopic);
+          client.publish(idmSetupTopic, "bb55555a-2ea8-4fd9-b4d2-1305c974c788,TestHome,Testing123!,New IDM");
+      }
+      */
+
+      while(true)
+      {
+        if (!client.connected()) {
+          connectMQTT();
+        }
+        client.loop();
+        
+         //Read analog value for this cycle
+        int analogValue = analogRead(A0);
+        Serial.println(analogValue);
+            
+        //Check for state change and publish
+        if(analogValue >= 500 && closed)
+        {
+      
+          //Publish state change to closed 
+          //connectMQTT();
+          client.publish(idmStateTopic,"bb55555a-2ea8-4fd9-b4d2-1305c974c788,false");
+          
+          
+          //Change state to open
+          closed = false;
+          Serial.println("State has been changed to OPEN");
+        }
+        else if(analogValue < 500 && !closed)
+        {
+          
+          //Publish state change to open
+          //connectMQTT();
+          client.publish(idmStateTopic,"bb55555a-2ea8-4fd9-b4d2-1305c974c788,true");
+          
+          //Change state to closed
+          closed = true;
+          Serial.println("State has been changed to CLOSED");
+        }
+      
+        //Disconnect. We dont need to waste our energy with these connections
+        //client.disconnect();
+      
+          //Delay, we dont need to run this shit that often
+        delay(750);
+      }
+   }    
+     delay(1000);
 }
+

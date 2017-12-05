@@ -13,6 +13,7 @@ bool isLocked = false;
 
 void setup() {
 
+  Serial.println("Setup");
   //Initialize Software Serial Connection
   esp8266.begin(9600);
 
@@ -20,13 +21,14 @@ void setup() {
   Serial.begin(9600);
 
   //Initialize Switch Pin. Set to high
-  pinMode(24, OUTPUT);
-  digitalWrite(24, HIGH);
+  pinMode(12, OUTPUT);
+  digitalWrite(12, LOW);
 }
 
 void loop() {
 
   //Check Lock State
+  Serial.println("Running");
 
   //Read and execute serial command
   if(esp8266.available())
@@ -49,36 +51,29 @@ void loop() {
     {
 
       Serial.println("Locking deadbolt");
-//      turnDeadbolt(1);
-
-        //Close switch
-        digitalWrite(24, LOW);
-          
-
-        //Actuate motor
-        for(int i =0; i < 50; i++)
-        {
-          myStepper.step(1);
-          delay(10);
-        }
-
-      //Open switch
-      digitalWrite(24, HIGH);
+      digitalWrite(12, HIGH);
+      delay(10);
+      turnDeadbolt(1);
       
       //REMOVE
       isLocked = true; 
+      digitalWrite(12, LOW);
+      delay(10);
     }
-    //else if (serialCommand == "UNLOCK" && isLocked)
-//    else if (serialCommand == "UNLOCK")
-//    {
-//    
-//      turnDeadbolt(-1);
-//
-//      //REMOVE
-//      isLocked = false; 
-//    }
-   }
+    else if (serialCommand == "UNLOCK")
+    {
 
+      Serial.println("Unlocking deadbolt");
+      digitalWrite(12, HIGH);
+      delay(10);
+      turnDeadbolt(-1);
+
+      //REMOVE
+      isLocked = false; 
+      digitalWrite(12, LOW);
+      delay(10);
+    }
+   }
    //Send lock state to Wi-Fi Chip
 }
 
