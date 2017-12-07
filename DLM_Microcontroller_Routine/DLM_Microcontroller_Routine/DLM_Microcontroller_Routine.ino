@@ -23,6 +23,8 @@ void setup() {
   //Initialize Switch Pin. Set to high
   pinMode(12, OUTPUT);
   digitalWrite(12, LOW);
+
+  myStepper.setSpeed(15);
 }
 
 void loop() {
@@ -51,27 +53,19 @@ void loop() {
     {
 
       Serial.println("Locking deadbolt");
-      digitalWrite(12, HIGH);
-      delay(10);
       turnDeadbolt(1);
       
       //REMOVE
       isLocked = true; 
-      digitalWrite(12, LOW);
-      delay(10);
     }
     else if (serialCommand == "UNLOCK")
     {
 
       Serial.println("Unlocking deadbolt");
-      digitalWrite(12, HIGH);
-      delay(10);
       turnDeadbolt(-1);
 
       //REMOVE
       isLocked = false; 
-      digitalWrite(12, LOW);
-      delay(10);
     }
    }
    //Send lock state to Wi-Fi Chip
@@ -82,15 +76,50 @@ void loop() {
 void turnDeadbolt(int turnDirection)
 {
   //Close switch
-  
+  digitalWrite(12, HIGH);
+  delay(10);
+
+  /*
   //Actuate motor
   for(int i =0; i < 50; i++)
   {
     myStepper.step(turnDirection);
-    delay(10);
+    delay(1);
   }
+  */
+  myStepper.step(65*turnDirection);
 
   //Open switch
+  digitalWrite(12, LOW);
+  delay(10);
+}
+
+void lock()
+{
+  //Close switch
+  digitalWrite(12, HIGH);
+  delay(10);
+
+  myStepper.setSpeed(15); 
+  myStepper.step(65);
+
+  //Open switch
+  digitalWrite(12, LOW);
+  delay(10);
+}
+
+void unlock()
+{
+  //Close switch
+  digitalWrite(12, HIGH);
+  delay(10);
+
+  myStepper.setSpeed(20);
+  myStepper.step(-70);
+
+  //Open switch
+  digitalWrite(12, LOW);
+  delay(10);
 }
 
 

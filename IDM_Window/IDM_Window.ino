@@ -158,7 +158,7 @@ void loop() {
         Serial.println(analogValue);
             
         //Check for state change and publish
-        if(analogValue >= 580 && closed)
+        if(analogValue >= 420 && closed)
         {
       
           //Publish state change to closed 
@@ -170,7 +170,7 @@ void loop() {
           closed = false;
           Serial.println("State has been changed to OPEN");
         }
-        else if(analogValue < 580 && !closed)
+        else if(analogValue < 420 && !closed)
         {
           
           //Publish state change to open
