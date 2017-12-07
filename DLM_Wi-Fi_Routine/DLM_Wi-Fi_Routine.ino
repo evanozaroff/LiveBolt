@@ -8,6 +8,7 @@ const char* GUID = "229371a2-0af0-4514-ade7-ad339f94ced4";
 
 //Hard Coded Topics
 char* dlmLockTopic = "dlm/lock/229371a2-0af0-4514-ade7-ad339f94ced4";
+char* dlmStatusTopic = "dlm/status";
 
 
 void callback(char* topic, byte* payload, unsigned int length) {
@@ -19,10 +20,12 @@ void callback(char* topic, byte* payload, unsigned int length) {
     if ((char)payload[0] == '1')
     {
       Serial.write("LOCK");
+      publishStatus(true);
     }
     if ((char)payload[0] == '0')
     {
-      Serial.println("UNLOCK");
+      Serial.write("UNLOCK");
+      publishStatus(false);
     }
       
     //Delay to allow actuation to progress
@@ -39,6 +42,18 @@ const char* mqtt_server = "livebolt.rats3g.net";
 WiFiClientSecure espClient;
 PubSubClient client(mqtt_server,8883,callback,espClient);
 
+void publishStatus(boolean value)
+{
+  //Serial.println(dlmStatusTopic);
+  if(value)
+  {
+    client.publish(dlmStatusTopic,"229371a2-0af0-4514-ade7-ad339f94ced4,true");
+  }
+  else
+  {
+    client.publish(dlmStatusTopic,"229371a2-0af0-4514-ade7-ad339f94ced4,false");
+  }
+}
 
 void setup()
 { 
@@ -53,7 +68,7 @@ void setup()
     //Collect, test, and store credentials
   //Else
   //Connect to WiFi (hard coded)
-  WiFi.begin("Embedded Systems Class", "embedded1234");
+  WiFi.begin("H2P", "1abc2bc3c4");
   
   Serial.print("Connecting");
   while (WiFi.status() != WL_CONNECTED)
@@ -112,6 +127,7 @@ void loop() {
 
   //Loop Client for new messages
   client.loop();
+  delay(500);
 
   //Recieve lock state
     //Publish lock state

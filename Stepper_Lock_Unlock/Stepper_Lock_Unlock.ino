@@ -21,7 +21,7 @@
 
 const int stepsPerRevolution = 200;  // change this to fit the number of steps per revolution
 // for your motor
-int analogPin1 = A1;
+int analogPin1 = A4;
 int analogPin2 = A2;
 bool locked = true;
 
@@ -40,16 +40,18 @@ void setup() {
 void loop() {
 
   int a1Value = (analogRead(analogPin1) / 1023) * 5;
-
-  if(a1Value > 2.5 && locked)
+  Serial.println(a1Value);
+  if(a1Value > 2.5)
   {
-      for(int i =0; i < 50; i++){
+    for(int i = 0; i < 50; i++){
         myStepper.step(-1);
         delay(10);
     }
 
     locked = false;
   }
+
+  /*
   else if(a1Value > 2.5 && !locked)
   {
       for(int i =0; i < 50; i++){
@@ -59,15 +61,5 @@ void loop() {
 
     locked = true;
   }
-
-  int a2Value = analogRead(analogPin2);
-  Serial.println(a2Value);
-  if(a2Value < 400)
-  {
-    digitalWrite(07, LOW);   // turn the LED on (HIGH is the voltage level)
-  }
-  else  
-  {
-    digitalWrite(07, HIGH);
-  }
+  */
 }

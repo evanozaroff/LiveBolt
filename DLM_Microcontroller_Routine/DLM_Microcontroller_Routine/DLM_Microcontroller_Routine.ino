@@ -13,6 +13,7 @@ bool isLocked = false;
 
 void setup() {
 
+  Serial.println("Setup");
   //Initialize Software Serial Connection
   esp8266.begin(9600);
 
@@ -20,13 +21,16 @@ void setup() {
   Serial.begin(9600);
 
   //Initialize Switch Pin. Set to high
-  pinMode(24, OUTPUT);
-  digitalWrite(24, HIGH);
+  pinMode(12, OUTPUT);
+  digitalWrite(12, LOW);
+
+  myStepper.setSpeed(15);
 }
 
 void loop() {
 
   //Check Lock State
+  Serial.println("Running");
 
   //Read and execute serial command
   if(esp8266.available())
@@ -49,36 +53,21 @@ void loop() {
     {
 
       Serial.println("Locking deadbolt");
-//      turnDeadbolt(1);
-
-        //Close switch
-        digitalWrite(24, LOW);
-          
-
-        //Actuate motor
-        for(int i =0; i < 50; i++)
-        {
-          myStepper.step(1);
-          delay(10);
-        }
-
-      //Open switch
-      digitalWrite(24, HIGH);
+      turnDeadbolt(1);
       
       //REMOVE
       isLocked = true; 
     }
-    //else if (serialCommand == "UNLOCK" && isLocked)
-//    else if (serialCommand == "UNLOCK")
-//    {
-//    
-//      turnDeadbolt(-1);
-//
-//      //REMOVE
-//      isLocked = false; 
-//    }
-   }
+    else if (serialCommand == "UNLOCK")
+    {
 
+      Serial.println("Unlocking deadbolt");
+      turnDeadbolt(-1);
+
+      //REMOVE
+      isLocked = false; 
+    }
+   }
    //Send lock state to Wi-Fi Chip
 }
 
@@ -87,15 +76,50 @@ void loop() {
 void turnDeadbolt(int turnDirection)
 {
   //Close switch
-  
+  digitalWrite(12, HIGH);
+  delay(10);
+
+  /*
   //Actuate motor
   for(int i =0; i < 50; i++)
   {
     myStepper.step(turnDirection);
-    delay(10);
+    delay(1);
   }
+  */
+  myStepper.step(65*turnDirection);
 
   //Open switch
+  digitalWrite(12, LOW);
+  delay(10);
+}
+
+void lock()
+{
+  //Close switch
+  digitalWrite(12, HIGH);
+  delay(10);
+
+  myStepper.setSpeed(15); 
+  myStepper.step(65);
+
+  //Open switch
+  digitalWrite(12, LOW);
+  delay(10);
+}
+
+void unlock()
+{
+  //Close switch
+  digitalWrite(12, HIGH);
+  delay(10);
+
+  myStepper.setSpeed(20);
+  myStepper.step(-70);
+
+  //Open switch
+  digitalWrite(12, LOW);
+  delay(10);
 }
 
 
