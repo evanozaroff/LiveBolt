@@ -2,7 +2,6 @@
 #include <PubSubClient.h>
 #include <SoftwareSerial.h>
 
-
 //Hard Coded GUID
 const char* GUID = "229371a2-0af0-4514-ade7-ad339f94ced4";
 
@@ -10,13 +9,13 @@ const char* GUID = "229371a2-0af0-4514-ade7-ad339f94ced4";
 char* dlmLockTopic = "dlm/lock/229371a2-0af0-4514-ade7-ad339f94ced4";
 char* dlmStatusTopic = "dlm/status";
 
-
+//Callback to be used by PubSubClient
 void callback(char* topic, byte* payload, unsigned int length) {
 
   //Check for lock/unlock commands
   if (strcmp(topic,dlmLockTopic)==0){
 
-    //Send lock commands to microcontroller
+    //Send lock commands to microcontroller and publish status
     if ((char)payload[0] == '1')
     {
       Serial.write("LOCK");
@@ -34,14 +33,13 @@ void callback(char* topic, byte* payload, unsigned int length) {
 }
 
 //Hard Coded Credentials
-const char* ssid = "Embedded Systems Class";
-const char* pasword = "embedded1234";
 const char* mqtt_server = "livebolt.rats3g.net";
 
 //Establish WiFi Client for MQTT connection
 WiFiClientSecure espClient;
 PubSubClient client(mqtt_server,8883,callback,espClient);
 
+//Publishes DLM status to DLM status topic
 void publishStatus(boolean value)
 {
   //Serial.println(dlmStatusTopic);
@@ -61,13 +59,7 @@ void setup()
   Serial.begin(9600);
   Serial.println();
   
-  
-  //Check Memory for WiFi Credentials
-
-  //If no credentials, go to AP mode
-    //Collect, test, and store credentials
-  //Else
-  //Connect to WiFi (hard coded)
+  //Hard-Coded Access to Wi-Fi hotspot
   WiFi.begin("H2P", "1abc2bc3c4");
   
   Serial.print("Connecting");
@@ -81,13 +73,9 @@ void setup()
 
   //Connect to MQTT server
   reconnect();
-
-  //Publish identifier to coorect topic
-
-  //Subscribe to correct topics
 }
 
-
+//Connect to MQTT
 void reconnect() {
   
   // Loop until reconnected
@@ -128,7 +116,4 @@ void loop() {
   //Loop Client for new messages
   client.loop();
   delay(500);
-
-  //Recieve lock state
-    //Publish lock state
 }

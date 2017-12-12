@@ -15,6 +15,23 @@ String ConfigManager::getHomePassword(){
 	return this->homePassword;
 }
 
+bool ConfigManager::EEPROMisEmpty()
+{
+		//Clear EEPROM before startup
+		bool result;
+		Serial.print("In is empty");
+		if(EEPROM.read(WIFI_OFFSET) == 255)
+		{
+			result =  true;
+		}
+		else
+		{
+		result = true;	
+		}
+
+		return result;
+}
+
 void ConfigManager::clearEEPROM()
 {
 		//Clear EEPROM before startup
@@ -25,6 +42,7 @@ void ConfigManager::clearEEPROM()
 		Serial.print("in: ");
 		Serial.println(CONFIG_OFFSET + this->configSize);
 }
+
 
 Mode ConfigManager::getMode() {
     return this->mode;

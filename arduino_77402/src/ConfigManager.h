@@ -123,6 +123,7 @@ public:
 	String getHomePassword();
 	
 	void clearEEPROM();
+	bool EEPROMisEmpty();
 	
     template<typename T>
     void begin(T &config) {
@@ -134,7 +135,7 @@ public:
         EEPROM.begin(CONFIG_OFFSET + this->configSize);
 
 	
-		clearEEPROM();
+		//clearEEPROM();
 		
         setup();
     }
