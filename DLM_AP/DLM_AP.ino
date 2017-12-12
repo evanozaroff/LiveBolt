@@ -6,11 +6,6 @@
 
 const char* GUID = "ab55555a-2ea8-4fd9-b4d2-1305c974c788";
 
-//Hard Coded Credentials
-const char* ssid = "Embedded Systems Class";
-const char* pasword = "embedded1234";
-const char* mqtt_server = "livebolt.rats3g.net";
-
 //Hard Coded Topics
 char* idmSetupTopic = "idm/register";
 char* idmStateTopic = "idm/status";
@@ -23,7 +18,6 @@ ConfigManager configManager;
 void callback(char* topic, byte* payload, unsigned int length) {
   //Clear EEPROM
   Serial.println("Request to remove");
-  //sendConfirm();
   configManager.clearEEPROM();
   configManager.restartChip();
 }
