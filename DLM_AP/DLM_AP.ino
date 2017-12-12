@@ -4,17 +4,12 @@
 
 #include <ConfigManager.h>
 
-const char* GUID = "bb55555a-2ea8-4fd9-b4d2-1305c974c788";
-
-//Hard Coded Credentials
-const char* ssid = "Embedded Systems Class";
-const char* pasword = "embedded1234";
-const char* mqtt_server = "livebolt.rats3g.net";
+const char* GUID = "ab55555a-2ea8-4fd9-b4d2-1305c974c788";
 
 //Hard Coded Topics
 char* idmSetupTopic = "idm/register";
 char* idmStateTopic = "idm/status";
-char* idmRemoveTopic = "idm/remove/bb55555a-2ea8-4fd9-b4d2-1305c974c788";
+char* idmRemoveTopic = "idm/remove/ab55555a-2ea8-4fd9-b4d2-1305c974c788";
 char* idmRemoveConfirm = "idm/removeConfirm";
 
 ConfigManager configManager;
@@ -23,8 +18,8 @@ ConfigManager configManager;
 void callback(char* topic, byte* payload, unsigned int length) {
   //Clear EEPROM
   Serial.println("Request to remove");
-  //sendConfirm();
   configManager.clearEEPROM();
+  configManager.restartChip();
 }
 
 
@@ -36,7 +31,7 @@ WiFiClientSecure espClient;
 PubSubClient client(mqtt_server,8883,callback,espClient);
 
 void sendConfirm() {
-  client.publish(idmRemoveConfirm,"bb55555a-2ea8-4fd9-b4d2-1305c974c788,TestHome");
+  client.publish(idmRemoveConfirm,"ab55555a-2ea8-4fd9-b4d2-1305c974c788,TestHome");
   delay(1000);
 }
 
@@ -116,36 +111,30 @@ void connectMQTT()
  }
 
 void loop() {
-    configManager.loop();
-
-    
-    if(configManager.getHomeName() == "")
-    {
-     
-    }
-    else
-    {
-      // Add your loop code here
-      Serial.println("Home is: "+configManager.getHomeName());
-      Serial.println(configManager.getHomePassword());
-
-      connectMQTT();
-      client.publish(idmSetupTopic, "bb55555a-2ea8-4fd9-b4d2-1305c974c788,TestHome,Testing123!,New IDM");
-
-      /*
-      if(configManager.readAddedToHome())
+      
+      
+      configManager.loop();
+      if(configManager.getHomeName() == "")
       {
         
       }
       else
       {
-          Serial.println("Subscribing to: ");
-          Serial.println(idmSetupTopic);
-          client.publish(idmSetupTopic, "bb55555a-2ea8-4fd9-b4d2-1305c974c788,TestHome,Testing123!,New IDM");
-      }
-      */
-     
+        // Add your loop code here
+      Serial.println("Home is: "+configManager.getHomeName());
+      Serial.println(configManager.getHomePassword());
 
+      connectMQTT();
+      String message = "ab55555a-2ea8-4fd9-b4d2-1305c974c788," + configManager.getHomeName() + "," + configManager.getHomePassword() + ",New IDM";
+      char payload[200];
+      strcpy(payload, message.c_str());
+      Serial.println("Publishing to: ");
+      Serial.println(idmSetupTopic);
+      Serial.println(payload);
+      
+      client.publish(idmSetupTopic, payload);
+     
+      configManager.clearEEPROM();
       while(true)
       {
         if (!client.connected()) {
@@ -163,7 +152,7 @@ void loop() {
       
           //Publish state change to closed 
           //connectMQTT();
-          client.publish(idmStateTopic,"bb55555a-2ea8-4fd9-b4d2-1305c974c788,false");
+          client.publish(idmStateTopic,"ab55555a-2ea8-4fd9-b4d2-1305c974c788,false");
           
           
           //Change state to open
@@ -175,7 +164,7 @@ void loop() {
           
           //Publish state change to open
           //connectMQTT();
-          client.publish(idmStateTopic,"bb55555a-2ea8-4fd9-b4d2-1305c974c788,true");
+          client.publish(idmStateTopic,"ab55555a-2ea8-4fd9-b4d2-1305c974c788,true");
           
           //Change state to closed
           closed = true;
@@ -188,7 +177,8 @@ void loop() {
           //Delay, we dont need to run this shit that often
         delay(750);
       }    
-  }
+      }
+  
      delay(1000);
 }
 

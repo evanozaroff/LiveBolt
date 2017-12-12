@@ -34,8 +34,8 @@ void callback(char* topic, byte* payload, unsigned int length) {
 }
 
 //Hard Coded Credentials
-const char* ssid = "Embedded Systems Class";
-const char* pasword = "embedded1234";
+const char* ssid = "iPhone";
+const char* pasword = "livebolt";
 const char* mqtt_server = "livebolt.rats3g.net";
 
 //Establish WiFi Client for MQTT connection
@@ -68,7 +68,7 @@ void setup()
     //Collect, test, and store credentials
   //Else
   //Connect to WiFi (hard coded)
-  WiFi.begin("H2P", "1abc2bc3c4");
+  WiFi.begin("Embedded Systems Class", "embedded1234");
   
   Serial.print("Connecting");
   while (WiFi.status() != WL_CONNECTED)

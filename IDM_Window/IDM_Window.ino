@@ -23,7 +23,6 @@ ConfigManager configManager;
 void callback(char* topic, byte* payload, unsigned int length) {
   //Clear EEPROM
   Serial.println("Request to remove");
-  //sendConfirm();
   configManager.clearEEPROM();
 }
 
@@ -82,7 +81,6 @@ void setup() {
    
     configManager.setAPICallback(createCustomRoute);
 
-    //
 }
 
 void connectMQTT() 
@@ -131,20 +129,6 @@ void loop() {
 
       connectMQTT();
       client.publish(idmSetupTopic, "bb55555a-2ea8-4fd9-b4d2-1305c974c788,TestHome,Testing123!,New IDM");
-
-      /*
-      if(configManager.readAddedToHome())
-      {
-        
-      }
-      else
-      {
-          Serial.println("Subscribing to: ");
-          Serial.println(idmSetupTopic);
-          client.publish(idmSetupTopic, "bb55555a-2ea8-4fd9-b4d2-1305c974c788,TestHome,Testing123!,New IDM");
-      }
-      */
-     
 
       while(true)
       {
