@@ -32,7 +32,6 @@ void callback(char* topic, byte* payload, unsigned int length) {
   } 
 }
 
-//Hard Coded Credentials
 const char* mqtt_server = "livebolt.rats3g.net";
 
 //Establish WiFi Client for MQTT connection
@@ -59,8 +58,13 @@ void setup()
   Serial.begin(9600);
   Serial.println();
   
-  //Hard-Coded Access to Wi-Fi hotspot
-  WiFi.begin("H2P", "1abc2bc3c4");
+  //Check Memory for WiFi Credentials
+
+  //If no credentials, go to AP mode
+    //Collect, test, and store credentials
+  //Else
+  //Connect to WiFi (hard coded)
+  WiFi.begin("Embedded Systems Class", "embedded1234");
   
   Serial.print("Connecting");
   while (WiFi.status() != WL_CONNECTED)

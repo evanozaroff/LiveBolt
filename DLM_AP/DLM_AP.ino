@@ -6,11 +6,6 @@
 
 const char* GUID = "ab55555a-2ea8-4fd9-b4d2-1305c974c788";
 
-//Hard Coded Credentials
-const char* ssid = "Embedded Systems Class";
-const char* pasword = "embedded1234";
-const char* mqtt_server = "livebolt.rats3g.net";
-
 //Hard Coded Topics
 char* idmSetupTopic = "idm/register";
 char* idmStateTopic = "idm/status";
@@ -23,8 +18,8 @@ ConfigManager configManager;
 void callback(char* topic, byte* payload, unsigned int length) {
   //Clear EEPROM
   Serial.println("Request to remove");
-  //sendConfirm();
   configManager.clearEEPROM();
+  configManager.restartChip();
 }
 
 
@@ -118,28 +113,73 @@ void connectMQTT()
  }
 
 void loop() {
-    
-    if(configManager.EEPROMisEmpty() && justTurnedOn)
-    {
-      Serial.println(configManager.EEPROMisEmpty());
+  
       configManager.loop();
-      Serial.println("Connected");
-      delay(400);
-    }
-    else
-    {
-      if(!configManager.EEPROMisEmpty())
+      if(configManager.getHomeName() == "")
       {
-        configManager.loop();
-        connectMQTT();
-        client.publish(idmSetupTopic, "ab55555a-2ea8-4fd9-b4d2-1305c974c788,TestHome,Testing123!,New IDM");
-        configManager.clearEEPROM();
+        
       }
-      configManager.clearEEPROM();
-      Serial.println("looping blank");
-      delay(400);
-    }
-    justTurnedOn = false;    
+      else
+      {
+        // Add your loop code here
+      Serial.println("Home is: "+configManager.getHomeName());
+      Serial.println(configManager.getHomePassword());
 
+      connectMQTT();
+      String message = "ab55555a-2ea8-4fd9-b4d2-1305c974c788," + configManager.getHomeName() + "," + configManager.getHomePassword() + ",New IDM";
+      char payload[200];
+      strcpy(payload, message.c_str());
+      Serial.println("Publishing to: ");
+      Serial.println(idmSetupTopic);
+      Serial.println(payload);
+      
+      client.publish(idmSetupTopic, payload);
+     
+      configManager.clearEEPROM();
+      while(true)
+      {
+        if (!client.connected()) {
+          connectMQTT();
+        }
+        client.loop();
+        
+         //Read analog value for this cycle
+        int analogValue = analogRead(A0);
+        Serial.println(analogValue);
+            
+        //Check for state change and publish
+        if(analogValue >= 580 && closed)
+        {
+      
+          //Publish state change to closed 
+          //connectMQTT();
+          client.publish(idmStateTopic,"ab55555a-2ea8-4fd9-b4d2-1305c974c788,false");
+          
+          
+          //Change state to open
+          closed = false;
+          Serial.println("State has been changed to OPEN");
+        }
+        else if(analogValue < 580 && !closed)
+        {
+          
+          //Publish state change to open
+          //connectMQTT();
+          client.publish(idmStateTopic,"ab55555a-2ea8-4fd9-b4d2-1305c974c788,true");
+          
+          //Change state to closed
+          closed = true;
+          Serial.println("State has been changed to CLOSED");
+        }
+      
+        //Disconnect. We dont need to waste our energy with these connections
+        //client.disconnect();
+      
+          //Delay, we dont need to run this shit that often
+        delay(750);
+      }    
+      }
+  
+     delay(1000);
 }
 
